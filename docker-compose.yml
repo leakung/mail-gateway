@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+
+  mail-gw:
+    container_name: mail-gw-postfix
+    restart: unless-stopped
+    hostname: ${HOSTNAME} 
+    build:
+      context: ./ 
+      args:
+        HOSTNAME: ${HOSTNAME}
+        DOMAINNAME: ${DOMAINNAME}
+    ports:
+      - "25:25"
+    volumes:
+      - ./var-log-mail:/var/log/mail
+      - ./letsencrypt:/etc/letsencrypt
+
+  nginx:
+    image: nginx:alpine
+    container_name: mail-gw-nginx
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Bangkok
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx-conf.d/app.conf:/etc/nginx/conf.d/app.conf
+      - ./acme_challenge:/tmp/acme_challenge
+      - ./letsencrypt:/etc/letsencrypt
+
